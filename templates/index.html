@@ -1,0 +1,2860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>穹爪云盾 - AI驱动的宠物健康平台</title>
+    <meta name="description" content="基于人工智能的宠物健康管理平台，提供智能诊断、品种识别和健康咨询服务">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-clean.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='knowledge-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='data-sources.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='enhanced-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='breed-result.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='detection-layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pet-profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='background.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='premium-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='premium-animations.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <!-- Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 宠物头像上传相关样式 */
+        .pet-avatar-upload {
+            margin-bottom: 20px;
+        }
+        
+        .avatar-preview-container {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .pet-avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #8a6eeb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+        
+        .pet-avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .upload-avatar-btn {
+            padding: 8px 16px;
+            background-color: #8a6eeb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .upload-avatar-btn:hover {
+            background-color: #7656e5;
+        }
+        
+        /* 宠物卡片头像样式 */
+        .pet-card-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #8a6eeb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+        
+        .pet-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar"></div>
+    <div class="container">
+        <h1 class="app-title">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="穹爪云盾Logo" class="app-logo">
+            <div class="title-text">
+                <span class="highlight">穹爪云盾</span> 
+                <span class="subtitle">宠物健康管理平台</span>
+            </div>
+        </h1>
+        <nav class="main-nav">
+            <div class="nav-item active" data-page="homePage"><i class="fas fa-home"></i> 首页</div>
+            <div class="nav-item" data-page="detectionPage"><i class="fas fa-search"></i> 识别</div>
+            <div class="nav-item" data-page="chatPage"><i class="fas fa-comment-medical"></i> AI问诊</div>
+            <div class="nav-item" data-page="petProfilePage"><i class="fas fa-paw"></i> 宠物档案</div>
+            <div class="nav-item" data-page="aboutPage"><i class="fas fa-info-circle"></i> 关于我们</div>
+        </nav>
+
+        <div class="content-wrapper">
+            <div id="detectionPage" class="page-content">
+                <div class="detection-header">
+                    <h2>智能识别系统</h2>
+                    <p class="detection-intro">基于深度学习的多模态宠物健康分析系统，支持多种检测类型，准确率达到98.7%</p>
+                </div>
+                <div class="nav-tabs">
+                    <div class="nav-item active" data-tab="breed">品种识别</div>
+                    <div class="nav-item" data-tab="oral">口腔检测</div>
+                    <div class="nav-item" data-tab="skin">皮肤检测</div>
+                    <div class="nav-item" data-tab="eye">眼部分析</div>
+                    <div class="nav-item" data-tab="excrement">排泄物检测</div>
+                    <div class="nav-item" data-tab="vomit">呕吐物检测</div>
+                    <div class="nav-item" data-tab="ear">耳道检测</div>
+                </div>
+                <!-- 品种识别模块 -->
+                <div class="detection-module active" id="breedModule">
+                    <div class="cosmic-container" style="
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    ">
+                        <!-- 模块标题 -->
+                        <div class="module-header" style="
+                            text-align: center;
+                            margin-bottom: 40px;
+                            position: relative;
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                width: 300px;
+                                height: 60px;
+                                background: radial-gradient(ellipse, rgba(139, 92, 246, 0.15), transparent 70%);
+                                filter: blur(10px);
+                                z-index: 0;
+                            "></div>
+                            
+                            <h2 style="
+                                font-size: 36px;
+                                font-weight: 700;
+                                color: white;
+                                margin-bottom: 15px;
+                                position: relative;
+                                z-index: 1;
+                                text-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+                            ">AI宠物品种识别</h2>
+                            
+                            <p style="
+                                color: rgba(255, 255, 255, 0.7);
+                                font-size: 16px;
+                                max-width: 600px;
+                                margin: 0 auto;
+                                line-height: 1.6;
+                                position: relative;
+                                z-index: 1;
+                            ">只需上传一张清晰照片，先进的深度学习算法将精准识别您宠物的品种，准确率高达98.7%</p>
+                                </div>
+                        
+                        <!-- 主内容区 - 改为垂直布局 -->
+                        <div class="content-grid" style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 30px;
+                            margin-bottom: 60px;
+                            max-width: 1000px;
+                            margin-left: auto;
+                            margin-right: auto;
+                        ">
+                            <!-- 上传区 -->
+                            <div class="upload-area" style="
+                                background: rgba(13, 18, 30, 0.75);
+                                border-radius: 20px;
+                                border: 1px solid rgba(138, 92, 246, 0.2);
+                                padding: 30px;
+                                box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                                backdrop-filter: blur(10px);
+                                position: relative;
+                                overflow: hidden;
+                                width: 100%;
+                            ">
+                                <!-- 隐藏的表单元素确保正确提交 -->
+                                <form id="breedForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                                    <input type="file" id="breedFileUpload" name="file" accept="image/*" style="display: none;">
+                                <input type="hidden" name="detection_type" value="breed">
+                            </form>
+                                
+                                <!-- 装饰元素 -->
+                                <div style="
+                                    position: absolute;
+                                    top: -80px;
+                                    right: -80px;
+                                    width: 250px;
+                                    height: 250px;
+                                    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                                    border-radius: 50%;
+                                    z-index: 0;
+                                "></div>
+                                
+                                <!-- 上传区域的标题 -->
+                                <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    margin-bottom: 25px;
+                                    position: relative;
+                                    z-index: 1;
+                                ">
+                                    <div style="
+                                        width: 44px;
+                                        height: 44px;
+                                        border-radius: 12px;
+                                        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-right: 15px;
+                                        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                                    ">
+                                        <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                        </div>
+                                    <h3 style="
+                                        font-size: 24px;
+                                        font-weight: 600;
+                                        color: white;
+                                        margin: 0;
+                                    ">上传宠物照片</h3>
+                                    </div>
+                                
+                                <!-- 具体的上传区域 -->
+                                <div id="uploadDropArea" style="
+                                    border: 2px dashed rgba(138, 92, 246, 0.5);
+                                    border-radius: 15px;
+                                    padding: 40px 20px;
+                                    text-align: center;
+                                    margin-bottom: 25px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    position: relative;
+                                    z-index: 1;
+                                    background: rgba(255, 255, 255, 0.03);
+                                ">
+                                    <i class="fas fa-cloud-upload-alt" style="
+                                        font-size: 60px;
+                                        color: rgba(138, 92, 246, 0.7);
+                                        margin-bottom: 20px;
+                                    "></i>
+                                    <h4 style="
+                                        font-size: 20px;
+                                        color: white;
+                                        margin: 0 0 10px;
+                                        font-weight: 500;
+                                    ">点击或拖拽上传图片</h4>
+                                    <p style="
+                                        color: rgba(255, 255, 255, 0.5);
+                                        margin: 0;
+                                        font-size: 14px;
+                                    ">支持 JPG、PNG 等格式</p>
+                                </div>
+                                
+                                <!-- 上传指南 -->
+                                <div style="
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 10px;
+                                    margin-bottom: 25px;
+                                    position: relative;
+                                    z-index: 1;
+                                ">
+                                    <div style="
+                                        background: rgba(0, 0, 0, 0.2);
+                                        padding: 10px 15px;
+                                        border-radius: 10px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    ">
+                                        <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                                        <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                            </div>
+                                    <div style="
+                                        background: rgba(0, 0, 0, 0.2);
+                                        padding: 10px 15px;
+                                        border-radius: 10px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    ">
+                                        <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                                        <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰正面照片</span>
+                        </div>
+                                    <div style="
+                                        background: rgba(0, 0, 0, 0.2);
+                                        padding: 10px 15px;
+                                        border-radius: 10px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    ">
+                                        <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                                        <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                    </div>
+                </div>
+                                
+                                <!-- 提交按钮 -->
+                                <button id="breedSubmitBtn" type="button" class="breed-submit-btn" style="
+                                    width: 100%;
+                                    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 12px;
+                                    padding: 16px;
+                                    font-size: 18px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    position: relative;
+                                    z-index: 1;
+                                    box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 10px;
+                                ">
+                                    <i class="fas fa-search"></i>
+                                    开始品种分析
+                                </button>
+                                
+                                <!-- 说明文本 -->
+                                <p style="
+                                    color: rgba(255, 255, 255, 0.4);
+                                    text-align: center;
+                                    font-size: 13px;
+                                    margin: 15px 0 0;
+                                    position: relative;
+                                    z-index: 1;
+                                ">上传即代表您同意我们的<a href="#" style="color: #8B5CF6; text-decoration: none;">服务条款</a>和<a href="#" style="color: #8B5CF6; text-decoration: none;">隐私政策</a></p>
+                    </div>
+                            
+                            <!-- 右侧预览与结果区 -->
+                            <div class="preview-result-area" style="
+                                width: 100%;
+                                margin-top: 20px;
+                            ">
+                                <!-- 结果容器 -->
+                                <div class="result-container" style="
+                                    display: none;
+                                    width: 100%;
+                                    max-width: 1000px;
+                                    margin: 0 auto;
+                                ">
+                                    <!-- 此处内容将由JS动态生成 -->
+                </div>
+                    </div>
+                </div>
+                        
+                        <!-- 功能介绍区 -->
+                        <div class="features-section" style="
+                            margin-top: 60px;
+                            padding-top: 40px;
+                            border-top: 1px solid rgba(255, 255, 255, 0.1);
+                        ">
+                            <h3 style="
+                                text-align: center;
+                                color: white;
+                                font-size: 24px;
+                                margin-bottom: 30px;
+                                font-weight: 600;
+                            ">强大的AI识别功能</h3>
+                            
+                            <div style="
+                                display: grid;
+                                grid-template-columns: repeat(3, 1fr);
+                                gap: 25px;
+                            ">
+                                <!-- 特性卡片1 -->
+                                <div style="
+                                    background: rgba(13, 18, 30, 0.6);
+                                    border-radius: 16px;
+                                    padding: 25px;
+                                    backdrop-filter: blur(10px);
+                                    border: 1px solid rgba(138, 92, 246, 0.1);
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                ">
+                                    <div style="
+                                        width: 50px;
+                                        height: 50px;
+                                        border-radius: 12px;
+                                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-bottom: 20px;
+                                        box-shadow: 0 4px 10px rgba(138, 92, 246, 0.3);
+                                    ">
+                                        <i class="fas fa-brain" style="color: white; font-size: 22px;"></i>
+            </div>
+                                    
+                                    <h4 style="
+                                        color: white;
+                                        font-size: 18px;
+                                        margin-bottom: 12px;
+                                        font-weight: 600;
+                                    ">高精度识别</h4>
+                                    
+                                    <p style="
+                                        color: rgba(255, 255, 255, 0.7);
+                                        font-size: 14px;
+                                        line-height: 1.6;
+                                        margin: 0;
+                                    ">采用先进的ConvNeXt网络模型，经过超过100万张图片训练，识别精度高达98.7%</p>
+                         </div>
+                                
+                                <!-- 特性卡片2 -->
+                                <div style="
+                                    background: rgba(13, 18, 30, 0.6);
+                                    border-radius: 16px;
+                                    padding: 25px;
+                                    backdrop-filter: blur(10px);
+                                    border: 1px solid rgba(138, 92, 246, 0.1);
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                ">
+                                    <div style="
+                                        width: 50px;
+                                        height: 50px;
+                                        border-radius: 12px;
+                                        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-bottom: 20px;
+                                        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+                                    ">
+                                        <i class="fas fa-database" style="color: white; font-size: 22px;"></i>
+                         </div>
+                                    
+                                    <h4 style="
+                                        color: white;
+                                        font-size: 18px;
+                                        margin-bottom: 12px;
+                                        font-weight: 600;
+                                    ">超广品种库</h4>
+                                    
+                                    <p style="
+                                        color: rgba(255, 255, 255, 0.7);
+                                        font-size: 14px;
+                                        line-height: 1.6;
+                                        margin: 0;
+                                    ">数据库囊括全球350+犬种和120+猫种，包括各类罕见品种和混血品种识别</p>
+                         </div>
+                                
+                                <!-- 特性卡片3 -->
+                                <div style="
+                                    background: rgba(13, 18, 30, 0.6);
+                                    border-radius: 16px;
+                                    padding: 25px;
+                                    backdrop-filter: blur(10px);
+                                    border: 1px solid rgba(138, 92, 246, 0.1);
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                ">
+                                    <div style="
+                                        width: 50px;
+                                        height: 50px;
+                                        border-radius: 12px;
+                                        background: linear-gradient(135deg, #EC4899 0%, #D946EF 100%);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-bottom: 20px;
+                                        box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+                                    ">
+                                        <i class="fas fa-bolt" style="color: white; font-size: 22px;"></i>
+                         </div>
+                                    
+                                    <h4 style="
+                                        color: white;
+                                        font-size: 18px;
+                                        margin-bottom: 12px;
+                                        font-weight: 600;
+                                    ">极速响应</h4>
+                                    
+                                    <p style="
+                                        color: rgba(255, 255, 255, 0.7);
+                                        font-size: 14px;
+                                        line-height: 1.6;
+                                        margin: 0;
+                                    ">优化的模型架构和高性能服务器确保处理速度，平均响应时间不超过1秒</p>
+                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="homePage" class="page-content active">
+                <section class="tech-section knowledge-section">
+                    <h2 class="section-title">技术能力</h2>
+                    <div class="tech-grid">
+                        <div class="tech-card hover-lift">
+                            <div class="tech-icon"><i class="fas fa-brain"></i></div>
+                            <h3>AI模型精度</h3>
+                            <p>识别准确率高达98.7%</p>
+                            <ul class="tech-features">
+                                <li>多轮次训练模型</li>
+                                <li>定期数据集更新</li>
+                                <li>专家辅助校正</li>
+                            </ul>
+                        </div>
+                        <div class="tech-card hover-lift">
+                            <div class="tech-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <h3>系统性能</h3>
+                            <p>平均响应时间小于1秒</p>
+                            <ul class="tech-features">
+                                <li>高效算法优化</li>
+                                <li>分布式架构</li>
+                                <li>边缘计算加速</li>
+                            </ul>
+                        </div>
+                        <div class="tech-card hover-lift">
+                            <div class="tech-icon"><i class="fas fa-chart-bar"></i></div>
+                            <h3>数据处理能力</h3>
+                            <p>每日处理10000+请求</p>
+                            <ul class="tech-features">
+                                <li>高并发处理</li>
+                                <li>实时数据分析</li>
+                                <li>智能负载均衡</li>
+                            </ul>
+                        </div>
+                        <div class="tech-card hover-lift">
+                            <div class="tech-icon"><i class="fas fa-shield-alt"></i></div>
+                            <h3>安全保障</h3>
+                            <p>全方位数据加密与保护</p>
+                            <ul class="tech-features">
+                                <li>端到端加密</li>
+                                <li>隐私数据保护</li>
+                                <li>安全合规认证</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                 
+                <section class="knowledge-section">
+                    <h2 class="section-title">宠物健康知识库</h2>
+                    <div class="knowledge-grid">
+                        <div class="knowledge-card hover-lift">
+                            <div class="icon-box"><i class="fas fa-heartbeat"></i></div>
+                            <h3>常见疾病</h3>
+                            <p>了解宠物常见疾病的症状、预防方法和治疗方法</p>
+                            <ul class="knowledge-list">
+                                <li>呼吸道感染</li>
+                                <li>消化系统疾病</li>
+                                <li>皮肤病</li>
+                                <li>关节炎</li>
+                            </ul>
+                        </div>
+                        <div class="knowledge-card hover-lift">
+                            <div class="icon-box"><i class="fas fa-apple-alt"></i></div>
+                            <h3>营养保健</h3>
+                            <p>科学的宠物营养和保健知识</p>
+                            <ul class="knowledge-list">
+                                <li>日常饮食建议</li>
+                                <li>营养补充指南</li>
+                                <li>运动建议</li>
+                                <li>保健品使用</li>
+                            </ul>
+                        </div>
+                        <div class="knowledge-card hover-lift">
+                            <div class="icon-box"><i class="fas fa-calendar-check"></i></div>
+                            <h3>日常护理</h3>
+                            <p>宠物日常护理和预防保健指南</p>
+                            <ul class="knowledge-list">
+                                <li>口腔护理</li>
+                                <li>毛发护理</li>
+                                <li>疫苗接种</li>
+                                <li>驱虫方案</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 权威数据来源 -->
+                <section class="data-sources-section">
+                    <h2 class="section-title">权威数据来源</h2>
+                    <div class="sources-grid">
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/wsava-logo.png') }}"
+                                    alt="WSAVA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>世界小动物兽医协会(WSAVA)</h4>
+                                <p>非营利组织,致力于提高全球小动物医疗水平。它提供了各种临床指南、教育资源和科研信息。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/cvda-logo.png') }}"
+                                    alt="CVDA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>中国兽药协会(CVDA)</h4>
+                                <p>中国兽药协会是非营利组织，推动监督兽药发展，确保产品质量安全，促进兽医卫生事业。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/cvma-logo.png') }}"
+                                    alt="CVMA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>中国兽医协会(CVMA)</h4>
+                                <p>全国综合性的兽医学术团体,负责制定和推广兽医学术行动计划,组织学术交流,推动兽医事业发展。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/who-logo.png') }}"
+                                    alt="WHO标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>世界卫生组织(WHO)</h4>
+                                <p>制定了多项与动物健康和公共卫生相关的标准和指南,如抗微生物药物使用、食源性疾病预防等。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/tmvm-logo.png') }}"
+                                    alt="TMVM标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>默克兽医手册(TMVM)</h4>
+                                <p>全球权威兽医参考手册,广受全球兽医推崇。它全面介绍了各种动物疾病的诊断、治疗、预防等。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div id="aboutPage" class="page-content">
+            <section class="about-section" id="about_duplicate">
+                <div class="about-card">
+                    <h2>关于我们</h2>
+                    <div class="about-description">
+                        <p>穹爪云盾是一个致力于应用人工智能技术提升宠物健康管理的创新平台。我们将先进的计算机视觉和自然语言处理技术与兽医专业知识相结合，为宠物主人提供便捷、专业的宠物健康解决方案。</p>
+                    </div>
+                    <div class="about-grid">
+                        <div class="team-photo"></div>
+                        <div class="tech-stack">
+                            <h3>技术体系</h3>
+                            <ul>
+                                <li>🖥️ CNN视觉识别模型</li>
+                                <li>🧠 LSTM时序分析</li>
+                                <li>📊 大数据病症图谱</li>
+                                <li>🤖 自然语言处理</li>
+                                <li>☁️ 云端实时推理</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mission-vision">
+                        <div class="mission">
+                            <h3>我们的使命</h3>
+                            <p>通过科技创新，让每一位宠物主人都能获得专业的宠物健康管理知识和工具，实现宠物疾病的早期预防和及时干预。</p>
+                        </div>
+                        <div class="vision">
+                            <h3>我们的愿景</h3>
+                            <p>成为宠物健康领域的数字化先驱，打造一个宠物主人、兽医和AI技术和谐共存的生态系统，让宠物拥有更健康、更快乐的生活。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="history">
+                        <h3>发展历程</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="year">2024.12</div>
+                                <div class="event">团队成立，开始研发宠物AI识别技术</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="year">2025.2</div>
+                                <div class="event">完成首个宠物识别模型，准确率达95%</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="year">2025.3</div>
+                                <div class="event">推出宠物ai问诊系统</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="year">2023</div>
+                                <div class="event">爱宠AI平台正式上线，服务用户超10万</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="core-services">
+                        <h3>核心服务</h3>
+                        <div class="services-grid">
+                            <div class="service-item">
+                                <i class="fas fa-paw"></i>
+                                <h4>宠物品种识别</h4>
+                                <p>通过深度学习技术，准确识别超过800种宠物品种</p>
+                            </div>
+                            <div class="service-item">
+                                <i class="fas fa-heartbeat"></i>
+                                <h4>健康状况评估</h4>
+                                <p>基于图像分析，评估宠物皮肤、眼睛、口腔等健康状况</p>
+                            </div>
+                            <div class="service-item">
+                                <i class="fas fa-comments"></i>
+                                <h4>智能问诊咨询</h4>
+                                <p>AI辅助宠物健康问题解答，提供专业建议</p>
+                            </div>
+                            <div class="service-item">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h4>宠物健康档案</h4>
+                                <p>数字化管理宠物健康信息，记录成长轨迹</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="team-info">
+                        <h3>我们的团队</h3>
+                        <p>爱宠AI团队由人工智能专家、兽医学专家、产品设计师和软件工程师组成，拥有来自知名高校和科技公司的专业背景。团队成员均对宠物健康和科技创新充满热情，致力于为宠物主人和宠物提供更好的生活体验。</p>
+                    </div>
+                    
+                    <button class="contact-btn">联系我们</button>
+                </div>
+                <section class="data-sources-section">
+                    <h3 class="section-title">权威数据来源</h3>
+                    <div class="sources-grid">
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/wsava-logo.png') }}"
+                                    alt="WSAVA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>世界小动物兽医协会(WSAVA)</h4>
+                                <p>非营利组织,致力于提高全球小动物医疗水平。它提供了各种临床指南、教育资源和科研信息。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/cvda-logo.png') }}"
+                                    alt="CVDA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>中国兽药协会(CVDA)</h4>
+                                <p>中国兽药协会是非营利组织，推动监督兽药发展，确保产品质量安全，促进兽医卫生事业。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/cvma-logo.png') }}"
+                                    alt="CVMA标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>中国兽医协会(CVMA)</h4>
+                                <p>全国综合性的兽医学术团体,负责制定和推广兽医学术行动计划,组织学术交流,推动兽医事业发展。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <img src="{{ url_for('static', filename='images/sources/who-logo.png') }}"
+                                    alt="WHO标志">
+                            </div>
+                            <div class="source-info">
+                                <h4>世界卫生组织(WHO)</h4>
+                                <p>制定了多项与动物健康和公共卫生相关的标准和指南,如抗微生物药物使用、食源性疾病预防等。</p>
+                            </div>
+                        </div>
+                        <div class="source-card">
+                            <div class="source-logo">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="source-info">
+                                <h4>默克兽医手册(TMVM)</h4>
+                                <p>全球权威兽医参考手册,广受全球兽医推崇。它全面介绍了各种动物疾病的诊断、治疗、预防等。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+
+        <!-- 口腔检测模块 -->
+        <div class="detection-module" id="oralModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物口腔检测</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物口腔照片，AI系统将分析口腔健康状况，识别常见问题（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="oralForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="oralFileUpload" name="file" accept="image/*" style="display: none;">
+                        <input type="hidden" name="detection_type" value="oral">
+                    </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                        </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传口腔照片</h3>
+                    </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+                    </div>
+                    
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰口腔照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="oralSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始口腔分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 皮肤检测模块 -->
+        <div class="detection-module" id="skinModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物皮肤检测</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物皮肤照片，AI系统将分析皮肤状况，识别常见皮肤问题（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="skinForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="skinFileUpload" name="file" accept="image/*" style="display: none;">
+                        <input type="hidden" name="detection_type" value="skin">
+                    </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                        </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传皮肤照片</h3>
+                    </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+                    </div>
+                    
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰皮肤照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="skinSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始皮肤分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 眼部分析模块 -->
+        <div class="detection-module" id="eyeModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物眼部分析</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物眼部照片，AI系统将分析眼部健康状况，识别常见眼部问题（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="eyeForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="eyeFileUpload" name="file" accept="image/*" style="display: none;">
+                        <input type="hidden" name="detection_type" value="eye">
+                    </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传眼部照片</h3>
+            </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+                    </div>
+                    
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="eyeSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始检测分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 排泄物检测模块 -->
+        <div class="detection-module" id="excrementModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物排泄物检测</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物排泄物照片，AI系统将分析消化健康状况，识别常见消化问题（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="excrementForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="excrementFileUpload" name="file" accept="image/*" style="display: none;">
+                    <input type="hidden" name="detection_type" value="excrement">
+                </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传排泄物照片</h3>
+            </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+                    </div>
+                    
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="excrementSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始检测分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 呕吐物检测模块 -->
+        <div class="detection-module" id="vomitModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物呕吐物检测</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物呕吐物照片，AI系统将分析可能的健康问题，识别常见消化异常（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="vomitForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="vomitFileUpload" name="file" accept="image/*" style="display: none;">
+                    <input type="hidden" name="detection_type" value="vomit">
+                </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传呕吐物照片</h3>
+            </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+                    </div>
+                    
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="vomitSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始检测分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 耳道检测模块 -->
+        <div class="detection-module" id="earModule">
+            <!-- 头部区域 -->
+            <div class="detection-header" style="
+                text-align: center;
+                margin-bottom: 40px;
+                position: relative;
+            ">
+                <h2 style="
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: white;
+                    margin-bottom: 15px;
+                    position: relative;
+                    display: inline-block;
+                ">AI宠物耳道检测</h2>
+                
+                <p style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 16px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    position: relative;
+                    z-index: 1;
+                ">上传宠物耳道照片，AI系统将分析耳道健康状况，识别常见耳部问题（功能开发中）</p>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="content-grid" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+                max-width: 1000px;
+                margin-left: auto;
+                margin-right: auto;
+            ">
+                <!-- 上传区 -->
+                <div class="upload-area" style="
+                    background: rgba(13, 18, 30, 0.75);
+                    border-radius: 20px;
+                    border: 1px solid rgba(138, 92, 246, 0.2);
+                    padding: 30px;
+                    box-shadow: 0 8px 32px rgba(2, 4, 15, 0.2), 0 0 15px rgba(138, 92, 246, 0.1);
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                    width: 100%;
+                ">
+                    <!-- 隐藏的表单元素确保正确提交 -->
+                    <form id="earForm" enctype="multipart/form-data" method="post" action="/predict" style="margin: 0;">
+                        <input type="file" id="earFileUpload" name="file" accept="image/*" style="display: none;">
+                        <input type="hidden" name="detection_type" value="ear">
+                    </form>
+                    
+                    <!-- 装饰元素 -->
+                    <div style="
+                        position: absolute;
+                        top: -80px;
+                        right: -80px;
+                        width: 250px;
+                        height: 250px;
+                        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+                        border-radius: 50%;
+                        z-index: 0;
+                    "></div>
+                    
+                    <!-- 上传区域的标题 -->
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            width: 44px;
+                            height: 44px;
+                            border-radius: 12px;
+                            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.5);
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 20px;"></i>
+                </div>
+                        <h3 style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: white;
+                            margin: 0;
+                        ">上传耳道照片</h3>
+            </div>
+                    
+                    <!-- 具体的上传区域 -->
+                    <div class="uploadDropArea" style="
+                        border: 2px dashed rgba(138, 92, 246, 0.5);
+                        border-radius: 15px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        z-index: 1;
+                        background: rgba(255, 255, 255, 0.03);
+                    ">
+                        <i class="fas fa-cloud-upload-alt" style="
+                            font-size: 60px;
+                            color: rgba(138, 92, 246, 0.7);
+                            margin-bottom: 20px;
+                        "></i>
+                        <h4 style="
+                            font-size: 20px;
+                            color: white;
+                            margin: 0 0 10px;
+                            font-weight: 500;
+                        ">点击或拖拽上传图片</h4>
+                        <p style="
+                            color: rgba(255, 255, 255, 0.5);
+                            margin: 0;
+                            font-size: 14px;
+                        ">支持 JPG、PNG 等格式</p>
+        </div>
+
+                    <!-- 上传指南 -->
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-bottom: 25px;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">文件不超过10MB</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">清晰耳道照片</span>
+                        </div>
+                        <div style="
+                            background: rgba(0, 0, 0, 0.2);
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        ">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">识别时间≤1秒</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button id="earSubmitBtn" type="button" class="detection-submit-btn" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 0 5px 20px rgba(138, 92, 246, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-search"></i>
+                        开始耳道分析
+                    </button>
+                    
+                    <!-- 说明文本 -->
+                    <p style="
+                        color: rgba(255, 255, 255, 0.4);
+                        text-align: center;
+                        font-size: 13px;
+                        margin: 15px 0 0;
+                        position: relative;
+                        z-index: 1;
+                    ">功能开发中，敬请期待</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div id="chatPage" class="page-content">
+            <div class="chat-container">
+                <div class="chat-content">
+                    <div id="chat-history" class="chat-box"></div>
+                    <div class="welcome-msg">
+                        <div class="avatar">🐾</div>
+                        <div class="bubble">
+                            <h3>您好，我是宠物医生小安！</h3>
+                        <p>我的建议仅供参考，紧急情况请立即联系兽医。请问有什么可以帮助您？</p>
+                        </div>
+                    </div>
+                    <div class="chat-loader" id="chatLoader">
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                    </div>
+                </div>
+                <div class="chat-controls">
+                <!-- 更新预设选项面板 -->
+                <div class="preset-panel">
+                    <h4 class="preset-title">常见症状咨询</h4>
+                    <div class="symptom-guide">
+                        <button class="guide-btn" data-symptom="vomit">呕吐症状 🤢</button>
+                        <button class="guide-btn" data-symptom="diarrhea">腹泻情况 💧</button>
+                        <button class="guide-btn" data-symptom="skin">皮肤问题 👐</button>
+                        <button class="guide-btn" data-symptom="appetite">食欲不振 🍽️</button>
+                        <button class="guide-btn" data-symptom="respiratory">呼吸异常 🫁</button>
+                        <button class="guide-btn" data-symptom="bleeding">出血情况 🩸</button>
+                    </div>
+                    <h4 class="preset-title">日常护理咨询</h4>
+                    <div class="symptom-guide">
+                        <button class="guide-btn" data-symptom="dental">牙齿护理 🦷</button>
+                        <button class="guide-btn" data-symptom="vaccine">疫苗接种 💉</button>
+                        <button class="guide-btn" data-symptom="parasite">驱虫方案 🪱</button>
+                        <button class="guide-btn" data-symptom="diet">饮食建议 🥩</button>
+                        <button class="guide-btn" data-symptom="aging">老年护理 👵</button>
+                </div>
+                    <h4 class="preset-title">行为与训练</h4>
+                    <div class="symptom-guide">
+                        <button class="guide-btn" data-symptom="anxiety">分离焦虑 😰</button>
+                        <button class="guide-btn" data-symptom="barking">吠叫问题 🗣️</button>
+                        <button class="guide-btn" data-symptom="toilet">如厕训练 🚽</button>
+                        <button class="guide-btn" data-symptom="aggression">攻击行为 ⚠️</button>
+            </div>
+                    </div>
+                <!-- 输入框部分 -->
+                <div class="input-group">
+                    <input type="text"
+                        id="user-input"
+                        placeholder="例如：我的狗狗呕吐了，应该注意什么...">
+                    <button
+                        type="button"
+                        id="sendButton"
+                        aria-label="发送消息">发送
+                    </button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 移除检测子菜单，相关功能已整合到识别页面 -->
+
+<script>
+
+document.querySelectorAll('.main-nav .nav-item').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // 移除所有导航按钮激活状态
+        document.querySelectorAll('.nav-item.active').forEach(item =>
+            item.classList.remove('active'));
+
+        // 添加当前按钮激活状态
+        this.classList.add('active');
+
+        // 隐藏所有页面
+        document.querySelectorAll('.page-content').forEach(page =>
+            page.classList.remove('active'));
+
+        // 显示对应页面
+        const targetId = this.dataset.page;
+        document.getElementById(targetId).classList.add('active');
+
+        // 处理识别功能子菜单
+        const detectionSubmenu = document.getElementById('detectionSubmenu');
+        if (targetId === 'detectionPage') {
+            detectionSubmenu.classList.add('active');
+        } else {
+            detectionSubmenu.classList.remove('active');
+        }
+    });
+});
+
+// 处理子功能按钮点击事件
+document.querySelectorAll('.detection-submenu .nav-item').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // 移除所有子功能按钮激活状态
+        document.querySelectorAll('.detection-submenu .nav-item.active').forEach(item =>
+            item.classList.remove('active'));
+
+        // 添加当前按钮激活状态
+        this.classList.add('active');
+    });
+});
+
+// 处理品种识别按钮点击
+document.addEventListener('DOMContentLoaded', function() {
+    // 品种识别按钮处理
+    const breedSubmitBtn = document.getElementById('breedSubmitBtn');
+    if (breedSubmitBtn) {
+        console.log('找到品种识别按钮，添加点击事件');
+        breedSubmitBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            console.log('品种识别按钮被点击');
+            
+            // 如果全局triggerRecognition函数存在，则调用它
+            if (typeof window.triggerRecognition === 'function') {
+                console.log('调用全局triggerRecognition函数');
+                window.triggerRecognition();
+            } else {
+                console.error('全局triggerRecognition函数不存在');
+                
+                // 尝试查找文件输入元素并检查是否有文件
+                const fileInput = document.getElementById('breedFileUpload');
+                if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                    // 有文件，手动构建表单并提交
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    formData.append('detection_type', 'breed');
+                    
+                    // 显示加载状态
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 识别中...';
+                    this.disabled = true;
+                    
+                    // 直接发送请求
+                    fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('识别成功:', data);
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        
+                        // 显示结果
+                        if (typeof window.displayResult === 'function') {
+                            window.displayResult(data, null);
+                        } else {
+                            alert('识别结果: ' + data.result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('识别失败:', error);
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        alert('识别失败: ' + error.message);
+                    });
+                } else {
+                    // 没有文件，提示用户上传
+                    alert('请先上传一张宠物照片');
+                    if (fileInput) {
+                        fileInput.click();
+                    }
+                }
+            }
+        });
+    }
+    
+    // 处理上传区域点击
+    const uploadArea = document.getElementById('uploadDropArea');
+    if (uploadArea) {
+        console.log('找到上传区域，添加点击事件');
+        uploadArea.addEventListener('click', function(event) {
+            // 避免点击按钮时触发
+            if (event.target.tagName !== 'BUTTON' && !event.target.closest('button')) {
+                const fileInput = document.getElementById('breedFileUpload');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            }
+        });
+    }
+});
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="{{ url_for('static', filename='breed-detection-new.js') }}"></script>
+
+<!-- 修复聊天功能 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 直接绑定聊天功能
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('sendButton');
+    const chatHistory = document.getElementById('chat-history');
+    const chatLoader = document.getElementById('chatLoader');
+    
+    console.log('聊天元素检查:', {
+        userInput: Boolean(userInput),
+        sendButton: Boolean(sendButton),
+        chatHistory: Boolean(chatHistory),
+        chatLoader: Boolean(chatLoader)
+    });
+    
+    // 保存聊天历史记录
+    let messageHistory = [];
+    
+    if (sendButton) {
+        // 解决发送按钮点击问题
+        sendButton.onclick = function() {
+            sendMessage();
+        };
+        console.log('发送按钮事件已直接绑定');
+    }
+    
+    if (userInput) {
+        // 处理输入框回车事件
+        userInput.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+                e.preventDefault();
+            }
+        };
+    }
+    
+    // 处理症状引导按钮
+    document.querySelectorAll('.guide-btn').forEach(btn => {
+        btn.onclick = function() {
+            const symptom = this.dataset.symptom;
+            let template = '';
+            
+            switch(symptom) {
+                // 常见症状咨询
+                case 'vomit':
+                    template = '我家2岁的金毛今天呕吐了3次，最近一次看到有少量血丝，精神还算正常，没有进食，请问应该怎么处理？是否需要立即就医？';
+                    break;
+                case 'diarrhea':
+                    template = '我的猫咪（1.5岁英短）最近两天大便很稀，有时候带点粘液，但精神和食欲都还好，是什么原因导致的？需要做什么处理？';
+                    break;
+                case 'skin':
+                    template = '我家3岁边牧最近一周总是抓挠身体，特别是腹部和耳朵附近，已经有点发红了，有时候还会舔舐爪子，这是什么问题？';
+                    break;
+                case 'appetite':
+                    template = '我家猫咪最近两天几乎不吃东西，只喝了点水，平时很爱吃的零食也不感兴趣了，但是精神状态看起来还行，应该怎么办？';
+                    break;
+                case 'respiratory':
+                    template = '我的宠物狗最近呼吸有点急促，还会间歇性地咳嗽，特别是运动后或者兴奋时更明显，这种情况严重吗？';
+                    break;
+                case 'bleeding':
+                    template = '我家狗狗今天大便时发现有血丝，粪便颜色偏深，之前没有出现过这种情况，这是什么问题？需要马上去医院吗？';
+                    break;
+                
+                // 日常护理咨询
+                case 'dental':
+                    template = '我家1岁半的金毛，从来没有给它刷过牙，最近发现口臭比较明显。想问一下该如何正确给狗狗清洁牙齿？需要使用什么工具和产品？';
+                    break;
+                case 'vaccine':
+                    template = '我刚领养了一只3个月大的小猫，请问应该安排哪些疫苗接种？各疫苗的接种时间和注意事项是什么？';
+                    break;
+                case 'parasite':
+                    template = '我家是纯室内猫，很少出门，请问这种情况下需要定期驱虫吗？如果需要，应该选择什么样的驱虫药，多久使用一次比较合适？';
+                    break;
+                case 'diet':
+                    template = '我家泰迪1岁了，我想知道每天应该喂食多少量？需要分几次喂？什么样的狗粮更有利于它的健康？';
+                    break;
+                case 'aging':
+                    template = '我家狗狗已经12岁了，最近行动变得缓慢，睡眠时间增加。请问照顾老年犬有什么特殊的注意事项？饮食上应该如何调整？';
+                    break;
+                
+                // 行为与训练
+                case 'anxiety':
+                    template = '我家2岁的柯基犬每次我出门时都会狂吠，有时还会咬坏家具，回来后发现它爪子都舔红了，这是分离焦虑吗？有什么方法可以帮助它？';
+                    break;
+                case 'barking':
+                    template = '我家狗狗对陌生人或其他狗过度吠叫，特别是在散步时，几乎控制不住。有什么训练方法可以改善这种行为？';
+                    break;
+                case 'toilet':
+                    template = '我新领养了一只3个月的小狗，想教它在固定地点上厕所，有什么有效的如厕训练方法？如果它在错误的地方排泄，应该怎么纠正？';
+                    break;
+                case 'aggression':
+                    template = '我家1.5岁的猫最近对家里的另一只新猫表现出攻击行为，会主动追赶和扑咬，该如何处理让它们和平相处？';
+                    break;
+                default:
+                    template = '';
+            }
+            
+            if (userInput) {
+                userInput.value = template;
+                userInput.focus();
+            }
+        };
+    });
+    
+    // 发送消息的函数
+    function sendMessage() {
+        if (!userInput || !chatHistory) return;
+        
+        const message = userInput.value.trim();
+        if (!message) return;
+        
+        console.log('发送消息:', message);
+        
+        // 清空输入框
+        userInput.value = '';
+        
+        // 添加用户消息到聊天历史
+        addMessage('user', message);
+        
+        // 保存到历史记录
+        messageHistory.push({
+            role: "user",
+            content: message
+        });
+        
+        // 显示加载动画
+        if (chatLoader) chatLoader.style.display = 'flex';
+        
+        // 调用深度求索API
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                history: messageHistory
+            })
+        })
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            // 记录完整响应信息以便调试
+            if (!response.ok) {
+                // 尝试读取错误响应内容
+                return response.text().then(text => {
+                    console.error('API错误响应内容:', text);
+                    try {
+                        return Promise.reject(new Error(`服务器响应: ${response.status} ${text || response.statusText}`));
+                    } catch (e) {
+                        return Promise.reject(new Error(`服务器响应: ${response.status} ${response.statusText}`));
+                    }
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            // 隐藏加载动画
+            if (chatLoader) chatLoader.style.display = 'none';
+            
+            if (data.code === 200 && data.data && data.data.response) {
+                const aiResponse = data.data.response;
+                
+                // 保存AI回复到历史记录
+                messageHistory.push({
+                    role: "assistant",
+                    content: aiResponse
+                });
+                
+                // 添加AI回复到聊天历史
+                addMessage('ai', aiResponse);
+            } else {
+                throw new Error(data.error || '服务器响应异常');
+            }
+            
+            // 滚动到底部
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        })
+        .catch(error => {
+            console.error('API调用详细错误:', error);
+            console.error('错误堆栈:', error.stack);
+            
+            // 隐藏加载动画
+            if (chatLoader) chatLoader.style.display = 'none';
+            
+            // 测试模式：使用模拟回复（临时解决方案）
+            const mockResponses = [
+                "根据您描述的情况，这可能是轻微的呼吸道感染。建议保持环境通风，多让宠物饮水，观察2-3天。如果症状加重，应立即就医。",
+                "您好，听起来可能是消化问题导致的症状。请注意宠物的饮食，暂时给予清淡易消化的食物，避免油腻。如果呕吐继续，建议咨询兽医。",
+                "这些症状可能与季节性过敏有关。建议减少外出时间，保持室内清洁，使用温水清洗宠物的爪子和腹部。如果皮肤出现红肿或搔抓加剧，请就医检查。",
+                "您好，这可能是由于饮食变化或摄入不适当食物导致的。建议24小时内少量多餐，确保饮水充足，观察大便情况。如果腹泻持续超过两天，应就医检查。"
+            ];
+            const mockReply = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+            
+            // 显示错误信息和模拟回复
+            addMessage('ai', `[API调用失败: ${error.message}]\n\n模拟回复: ${mockReply}`);
+            
+            // 滚动到底部
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        });
+    }
+    
+    // 添加消息到聊天历史
+    function addMessage(type, text) {
+        if (!chatHistory) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = type === 'user' ? 'user-message' : 'ai-message';
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        
+        if (type === 'ai') {
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = '🐾';
+            messageDiv.appendChild(avatar);
+        }
+        
+        messageDiv.appendChild(bubble);
+        chatHistory.appendChild(messageDiv);
+        
+        // 滚动到底部
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+});
+</script>
+
+<!-- 固定底部按钮 -->
+<div class="fixed-action-button" style="
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+">
+    <button id="fixedBreedBtn" type="button" style="
+        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.6);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    ">
+        <i class="fas fa-paw" style="font-size: 24px;"></i>
+    </button>
+</div>
+
+<!-- 自定义JS脚本，连接新布局与现有功能 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 连接页面内主按钮与固定按钮
+    const mainBreedBtn = document.getElementById('mainBreedBtn');
+    const fixedBreedBtn = document.getElementById('fixedBreedBtn');
+    
+    if (mainBreedBtn && fixedBreedBtn) {
+        // 主按钮悬停效果
+        mainBreedBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 6px 25px rgba(139, 92, 246, 0.6)';
+        });
+        
+        mainBreedBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 20px rgba(139, 92, 246, 0.4)';
+        });
+        
+        // 固定按钮悬停效果
+        fixedBreedBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.boxShadow = '0 6px 25px rgba(139, 92, 246, 0.8)';
+        });
+        
+        fixedBreedBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 4px 20px rgba(139, 92, 246, 0.6)';
+        });
+        
+        // 点击事件将触发文件上传或表单提交
+        mainBreedBtn.addEventListener('click', function() {
+            const fileInput = document.getElementById('breedFileUpload');
+            if (fileInput.files.length > 0) {
+                // 有文件时，触发分析处理
+                triggerBreedAnalysis();
+            } else {
+                // 无文件时，触发文件选择
+                fileInput.click();
+            }
+        });
+        
+        // 固定按钮点击事件
+        fixedBreedBtn.addEventListener('click', function() {
+            // 滚动到顶部并聚焦上传区
+            document.querySelector('.detection-module').scrollIntoView({
+                behavior: 'smooth'
+            });
+            
+            // 触发上传或分析
+            const fileInput = document.getElementById('breedFileUpload');
+            if (fileInput.files.length > 0) {
+                triggerBreedAnalysis();
+            } else {
+                setTimeout(() => {
+                    fileInput.click();
+                }, 500);
+            }
+        });
+    }
+    
+    // 图片预览逻辑
+    const fileUpload = document.getElementById('breedFileUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    
+    if (fileUpload && imagePreview && previewPlaceholder) {
+        fileUpload.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // 显示预览图片
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    previewPlaceholder.style.display = 'none';
+                    
+                    // 更新主按钮文字
+                    if (mainBreedBtn) {
+                        mainBreedBtn.innerHTML = '<i class="fas fa-search" style="margin-right: 10px; font-size: 18px;"></i> 开始分析';
+                    }
+                };
+                
+                reader.onerror = function(error) {
+                    console.error('文件读取失败:', error);
+                    alert('文件读取失败，请重试');
+                };
+                
+                // 开始读取文件
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+    
+    // 触发品种分析函数
+    function triggerBreedAnalysis() {
+        const breedForm = document.getElementById('breedForm');
+        const fileInput = document.getElementById('breedFileUpload');
+        
+        if (!breedForm || !fileInput || fileInput.files.length === 0) {
+            alert('请先上传一张宠物图片');
+            return;
+        }
+        
+        // 显示加载状态
+        if (mainBreedBtn) {
+            const originalBtnText = mainBreedBtn.innerHTML;
+            mainBreedBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 10px; font-size: 18px;"></i> 识别中...';
+            mainBreedBtn.disabled = true;
+        }
+        
+        // 创建FormData对象
+        const formData = new FormData(breedForm);
+        
+        // 发送AJAX请求
+        fetch('/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`识别请求失败: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 恢复按钮状态
+            if (mainBreedBtn) {
+                mainBreedBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 10px; font-size: 18px;"></i> 识别完成';
+                setTimeout(() => {
+                    mainBreedBtn.innerHTML = '<i class="fas fa-paw" style="margin-right: 10px; font-size: 18px;"></i> 开始品种分析';
+                    mainBreedBtn.disabled = false;
+                }, 2000);
+            }
+            
+            // 使用原有的结果显示函数展示结果
+            window.displayResult(data, imagePreview);
+        })
+        .catch(error => {
+            // 处理错误
+            console.error('识别错误:', error);
+            if (mainBreedBtn) {
+                mainBreedBtn.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 10px; font-size: 18px;"></i> 识别失败';
+                setTimeout(() => {
+                    mainBreedBtn.innerHTML = '<i class="fas fa-paw" style="margin-right: 10px; font-size: 18px;"></i> 重新识别';
+                    mainBreedBtn.disabled = false;
+                }, 2000);
+            }
+            
+            alert(`识别失败: ${error.message}`);
+        });
+    }
+});
+</script>
+
+        <div id="petProfilePage_duplicate" class="page-content">
+            <section class="pet-profile-section">
+                <h2 class="section-title">宠物档案管理</h2>
+                <div class="profile-list">
+                    <!-- 这里将展示所有宠物档案 -->
+                </div>
+                <button class="add-profile-btn">新建档案</button>
+                <div class="profile-form">
+                    <form id="petProfileForm_duplicate" class="pet-form">
+                        <!-- 表单内容... -->
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="petProfilePage" class="page-content">
+        <section class="pet-profile-section">
+            <h2 class="section-title">宠物档案管理</h2>
+            <button id="addPetBtn" class="add-pet-btn" onclick="openPetModal()"><i class="fas fa-plus"></i> 新建宠物档案</button>
+            
+            <div id="petProfileList" class="pet-profile-list">
+                <!-- 宠物档案列表将在这里动态生成 -->
+            </div>
+        </section>
+        
+        <!-- 宠物档案表单模态框 -->
+        <div id="petFormModal" class="modal" onclick="if(event.target === this) closePetModal()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="petFormTitle">添加宠物信息</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="petForm">
+                      <input type="hidden" id="petId" name="petId">
+                      
+                      <!-- 宠物照片上传部分 - 简化结构 -->
+                      <div style="margin-bottom: 20px; border: 1px solid #4a5568; padding: 15px; border-radius: 8px; background-color: rgba(74, 85, 104, 0.2);">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold; color: white;">宠物照片 <span style="color:#a855f7;">*</span></label>
+                        
+                        <!-- 预览区域 -->
+                        <div style="display: flex; align-items: center; margin-top: 10px;">
+                          <div id="petAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background-color: #8a6eeb; display: flex; align-items: center; justify-content: center; margin-right: 20px; overflow: hidden;">
+                            <i class="fas fa-paw" style="font-size: 40px; color: white;"></i>
+                          </div>
+                          
+                          <!-- 直接上传按钮 -->
+                          <div style="display: flex; flex-direction: column;">
+                            <input type="file" id="petAvatar" name="petAvatar" accept="image/*">
+                            <div id="uploadStatus" style="margin-top: 8px; font-size: 12px; color: #ccc;">请选择一张宠物照片</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                        <div class="form-group">
+                        <label for="petName">宠物名称 <span class="required">*</span></label>
+                            <input type="text" id="petName" name="petName" required>
+                        </div>
+                        <div class="form-group">
+                        <label for="petType">宠物类型 <span class="required">*</span></label>
+                        <select id="petType" name="petType" required>
+                          <option value="">请选择</option>
+                          <option value="dog">狗</option>
+                          <option value="cat">猫</option>
+                          <option value="other">其他</option>
+                        </select>
+                        </div>
+                      <div class="form-row">
+                        <div class="form-group half">
+                          <label for="petGender">性别</label>
+                          <select id="petGender">
+                            <option value="">请选择</option>
+                            <option value="公">公</option>
+                            <option value="母">母</option>
+                            <option value="未知">未知</option>
+                          </select>
+                        </div>
+                        <div class="form-group half">
+                          <label for="petNeutered">是否绝育</label>
+                          <select id="petNeutered">
+                            <option value="">请选择</option>
+                            <option value="是">是</option>
+                            <option value="否">否</option>
+                            <option value="未知">未知</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group half">
+                          <label for="petBirthday">出生日期</label>
+                          <input type="date" id="petBirthday">
+                        </div>
+                        <div class="form-group half">
+                          <label for="petAge">年龄</label>
+                          <input type="number" id="petAge" min="0" placeholder="请输入年龄">
+                        </div>
+                        </div>
+                        <div class="form-group">
+                        <label for="petWeight">体重 (kg)</label>
+                        <input type="number" id="petWeight" min="0" step="0.1" placeholder="请输入体重">
+                      </div>
+                      
+                      <div class="form-section">
+                        <h4>疫苗接种记录</h4>
+                        <div id="vaccineRecords">
+                          <div class="vaccine-record">
+                            <div class="form-row">
+                              <div class="form-group third">
+                                <label>疫苗类型</label>
+                                <input type="text" name="vaccineType[]" placeholder="疫苗类型">
+                              </div>
+                              <div class="form-group third">
+                                <label>接种日期</label>
+                                <input type="date" name="vaccineDate[]">
+                              </div>
+                              <div class="form-group third">
+                                <label>下次提醒日期</label>
+                                <input type="date" name="vaccineNextDate[]">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <button type="button" class="add-record-btn" onclick="addVaccineRecord()">添加疫苗记录</button>
+                      </div>
+                      
+                      <div class="form-section">
+                        <h4>驱虫记录</h4>
+                        <div id="dewormRecords">
+                          <div class="deworm-record">
+                            <div class="form-row">
+                              <div class="form-group half">
+                                <label>驱虫类型</label>
+                                <select name="dewormType[]">
+                                <option value="">请选择</option>
+                                  <option value="内驱">内驱</option>
+                                  <option value="外驱">外驱</option>
+                                  <option value="内外驱">内外驱</option>
+                            </select>
+                              </div>
+                              <div class="form-group half">
+                                <label>药物名称</label>
+                                <input type="text" name="dewormMedicine[]" placeholder="药物名称">
+                              </div>
+                            </div>
+                            <div class="form-row">
+                              <div class="form-group half">
+                                <label>使用日期</label>
+                                <input type="date" name="dewormDate[]">
+                              </div>
+                              <div class="form-group half">
+                                <label>下次周期(天)</label>
+                                <input type="number" name="dewormCycle[]" min="0" placeholder="周期天数">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <button type="button" class="add-record-btn" onclick="addDewormRecord()">添加驱虫记录</button>
+                      </div>
+                      
+                      <div class="form-section">
+                        <h4>既往病史</h4>
+                        <div id="medicalRecords">
+                          <div class="medical-record">
+                            <div class="form-row">
+                              <div class="form-group half">
+                                <label>疾病名称</label>
+                                <input type="text" name="diseaseName[]" placeholder="疾病名称">
+                              </div>
+                              <div class="form-group half">
+                                <label>确诊日期</label>
+                                <input type="date" name="diagnosisDate[]">
+                              </div>
+                        </div>
+                        <div class="form-group">
+                              <label>治疗结果</label>
+                              <textarea name="treatmentResult[]" rows="2" placeholder="治疗结果描述"></textarea>
+                        </div>
+                          </div>
+                        </div>
+                        <button type="button" class="add-record-btn" onclick="addMedicalRecord()">添加病史记录</button>
+                      </div>
+                      
+                      <div class="form-section">
+                        <h4>过敏原</h4>
+                        <div class="form-row">
+                          <div class="form-group third">
+                            <label>食物过敏</label>
+                            <input type="text" id="foodAllergy" placeholder="食物过敏原">
+                          </div>
+                          <div class="form-group third">
+                            <label>药物过敏</label>
+                            <input type="text" id="medicineAllergy" placeholder="药物过敏原">
+                          </div>
+                          <div class="form-group third">
+                            <label>环境过敏</label>
+                            <input type="text" id="environmentAllergy" placeholder="环境过敏原">
+                          </div>
+                        </div>
+                      </div>
+                      
+                        <div class="form-group">
+                        <label for="petNotes">备注</label>
+                        <textarea id="petNotes" rows="3" placeholder="请输入备注信息"></textarea>
+                        </div>
+                      <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closePetModal()">取消</button>
+                        <button type="submit" class="save-btn">保存</button>
+                      </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提示消息容器 -->
+        <div id="toast" class="toast"></div>
+    </div>
+</body>
+</html>

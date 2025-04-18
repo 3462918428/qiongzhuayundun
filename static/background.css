@@ -1,0 +1,20 @@
+/* 网站背景图片样式 */
+body {
+    background-image: url('../static/images/2.jpeg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+}
+
+/* 移除半透明遮罩层，保留原始背景图片 */
+body::before {
+    content: none; /* 移除伪元素内容 */
+}
+
+/* 确保所有内容在遮罩层之上 */
+.container, .main-content, .section {
+    position: relative;
+    z-index: 1;
+}

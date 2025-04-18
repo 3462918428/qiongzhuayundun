@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "id": "wsava",
+      "name": "世界小动物兽医协会(WSAVA)",
+      "file": "wsava-logo.png"
+    },
+    {
+      "id": "cvda",
+      "name": "中国兽药协会(CVDA)",
+      "file": "cvda-logo.png"
+    },
+    {
+      "id": "cvma",
+      "name": "中国兽医协会(CVMA)",
+      "file": "cvma-logo.png"
+    },
+    {
+      "id": "who",
+      "name": "世界卫生组织(WHO)",
+      "file": "who-logo.png"
+    },
+    {
+      "id": "tmvm",
+      "name": "默克兽医手册(TMVM)",
+      "file": "tmvm-logo.png"
+    }
+  ]
+} 
